@@ -9,8 +9,8 @@ class Order extends Model
     protected $table = 'orders';
     protected $fillable = ['buyer_user_id', 'lots', 'voucher_id'];
 
-    function buyer() {
-        return $this->belongsTo('App\Models\Buyer');
+    function user() {
+        return $this->belongsTo('App\Models\User', 'buyer_user_id', 'id');
     }
 
     function voucher() {

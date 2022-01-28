@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderCreated;
 use App\Models\Order;
 use App\Models\Shop;
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use App\Models\Product;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
@@ -112,11 +114,21 @@ class OrderController extends Controller
                 $totalPrice = 0;
 
             DB::commit();
+            
+            Mail::send(new OrderCreated($order, $totalPrice));
+            
+            if (Mail::failures()) {
+                return response()->json([
+                    'message' => 'Order created successfully without email sending',
+                    'data' => ['order' => $order]
+                ], 200);
+            }
+
             return response()->json([
-                'message' => 'Order created successfully',
+                'message' => 'Order created successfully with email sent',
                 'data' => [
                     'total_price' => $totalPrice,
-                    'order' => $order
+                    'order' => $order,
                 ]
             ], 200);
         } catch (\Exception $e) {
